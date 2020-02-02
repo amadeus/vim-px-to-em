@@ -6,7 +6,11 @@ if !exists('g:px_to_em_base')
 endif
 
 function! VimPxEmConvertPxToEm(px)
-  return printf("%0.3fem", 1.0/g:px_to_em_base*a:px)
+  return printf("%0.6fem", 1.0/g:px_to_em_base*a:px)
+endfunction
+
+function! VimPxEmConvertPxToRem(px)
+  return printf("%0.6frem", 1.0/g:px_to_em_base*a:px)
 endfunction
 
 function! VimPxEmConvertEmToPx(em)
@@ -31,19 +35,24 @@ function! VimPxEmConvert(convert_to, skip_confirmation, start_line, end_line)
 
   " Self explanitory
   if a:convert_to == "px"
-    let search_for = '\v((0)?(\.)?\d+\.\d+)em'
+    let search_for = '\v((0)?(\.)?\d+\.\d+)r?em'
     let conversion_function = "VimPxEmConvertEmToPx"
   elseif a:convert_to == "em"
     let search_for = '\v(\d+)px'
     let conversion_function = "VimPxEmConvertPxToEm"
+  elseif a:convert_to == "rem"
+    let search_for = '\v(\d+)px'
+    let conversion_function = "VimPxEmConvertPxToRem"
   endif
-  
+
   " Execute the command
   execute a:start_line . "," . a:end_line ."s/". search_for . "/" .'\='.conversion_function.'(submatch(1))' . "/" . modifiers
 endfunction
 
 "Available commands
+command! -range -bang Rem call VimPxEmConvert("rem",<bang>0,<line1>,<line2>)
 command! -range -bang Em call VimPxEmConvert("em",<bang>0,<line1>,<line2>)
 command! -range -bang Px call VimPxEmConvert("px", <bang>0,<line1>,<line2>)
 command! -range=% -bang EmAll call VimPxEmConvert("em",<bang>0,<line1>,<line2>)
 command! -range=% -bang PxAll call VimPxEmConvert("px", <bang>0,<line1>,<line2>)
+command! -range=% -bang RemAll call VimPxEmConvert("rem",<bang>0,<line1>,<line2>)
